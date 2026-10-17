@@ -1,0 +1,188 @@
+local Players = game:GetService("Players")  
+local RunService = game:GetService("RunService")  
+  
+local player = Players.LocalPlayer  
+  local TeamCheck = true
+
+local function shouldProcessTarget(targetPlayer)
+    if targetPlayer == player then
+        return false
+    end
+
+    if TeamCheck
+        and player.Team ~= nil
+        and targetPlayer.Team == player.Team then
+        return false
+    end
+
+    return true
+end
+
+local screenGui = Instance.new("ScreenGui")  
+screenGui.ResetOnSpawn = false  
+screenGui.DisplayOrder = 10  
+screenGui.Parent = player:WaitForChild("PlayerGui")  
+ 
+local frame = Instance.new("Frame")  
+frame.Size = UDim2.new(0, 280, 0, 160)  
+frame.AnchorPoint = Vector2.new(0.5, 0.5)  
+frame.Position = UDim2.new(0.5, 0, 0.5, 0)  
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)  
+frame.BorderSizePixel = 0  
+frame.ClipsDescendants = true  
+frame.Parent = screenGui  
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)  
+  
+local outline = Instance.new("UIStroke")  
+outline.Parent = frame  
+outline.Thickness = 3  
+outline.Color = Color3.fromRGB(0, 255, 255)  
+outline.Transparency = 0  
+outline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border  
+  
+local closeBtn = Instance.new("TextButton")  
+closeBtn.Size = UDim2.new(0, 28, 0, 28)  
+closeBtn.AnchorPoint = Vector2.new(1, 0)  
+closeBtn.Position = UDim2.new(1, -6, 0, 6)  
+closeBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)  
+closeBtn.Text = "X"  
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)  
+closeBtn.TextScaled = true  
+closeBtn.Parent = frame  
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)  
+  
+local miniBtn = Instance.new("TextButton")  
+miniBtn.Size = UDim2.new(0, 36, 0, 36)  
+miniBtn.Position = UDim2.new(0, 12, 0, 12)  
+miniBtn.BackgroundColor3 = Color3.fromRGB(255, 215, 0)  
+miniBtn.Text = "🔮"  
+miniBtn.TextColor3 = Color3.fromRGB(0, 0, 0)  
+miniBtn.TextScaled = true  
+miniBtn.Visible = false  
+miniBtn.Parent = screenGui  
+Instance.new("UICorner", miniBtn).CornerRadius = UDim.new(0, 8)  
+  
+local sizeBox = Instance.new("TextBox")  
+sizeBox.Size = UDim2.new(0, 100, 0, 32)  
+sizeBox.Position = UDim2.new(0, 12, 0, 38)  
+sizeBox.PlaceholderText = "Size"  
+sizeBox.Text = "10"  
+sizeBox.TextScaled = true  
+sizeBox.ClearTextOnFocus = false  
+sizeBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)  
+sizeBox.TextColor3 = Color3.fromRGB(255, 255, 255)  
+sizeBox.Parent = frame  
+Instance.new("UICorner", sizeBox).CornerRadius = UDim.new(0, 6)  
+  
+local transBox = Instance.new("TextBox")  
+transBox.Size = UDim2.new(0, 100, 0, 32)  
+transBox.Position = UDim2.new(0, 12, 0, 80)  
+transBox.PlaceholderText = "Transparency"  
+transBox.Text = "0.3"  
+transBox.TextScaled = true  
+transBox.ClearTextOnFocus = false  
+transBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)  
+transBox.TextColor3 = Color3.fromRGB(255, 255, 255)  
+transBox.Parent = frame  
+Instance.new("UICorner", transBox).CornerRadius = UDim.new(0, 6)  
+   
+local addBtn = Instance.new("TextButton")  
+addBtn.Size = UDim2.new(0, 120, 0, 32)  
+addBtn.Position = UDim2.new(0, 132, 0, 38)  
+addBtn.Text = "+ Size"  
+addBtn.TextScaled = true  
+addBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)  
+addBtn.TextColor3 = Color3.fromRGB(255, 255, 255)  
+addBtn.Parent = frame  
+Instance.new("UICorner", addBtn).CornerRadius = UDim.new(0, 6)  
+  
+local subBtn = Instance.new("TextButton")  
+subBtn.Size = UDim2.new(0, 120, 0, 32)  
+subBtn.Position = UDim2.new(0, 132, 0, 80)  
+subBtn.Text = "- Size"  
+subBtn.TextScaled = true  
+subBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)  
+subBtn.TextColor3 = Color3.fromRGB(255, 255, 255)  
+subBtn.Parent = frame  
+Instance.new("UICorner", subBtn).CornerRadius = UDim.new(0, 6)  
+ 
+local toggleBtn = Instance.new("TextButton")  
+toggleBtn.Size = UDim2.new(0, 248, 0, 36)  
+toggleBtn.Position = UDim2.new(0, 12, 0, 124) -- dinaikkan sedikit  
+toggleBtn.Text = "Enable Hitbox"  
+toggleBtn.TextScaled = true  
+toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)  
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)  
+toggleBtn.Parent = frame  
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 8)  
+  
+local HitboxSize = tonumber(sizeBox.Text) or 10  
+local HitboxTransparency = tonumber(transBox.Text) or 0.3  
+local Disabled = true  
+local PlayersList = {}  
+  
+local function refreshTargets()  
+	PlayersList = {}  
+	for _, pl in ipairs(Players:GetPlayers()) do  
+		if pl ~= player and pl.Character and pl.Character:FindFirstChild("HumanoidRootPart") then  
+			table.insert(PlayersList, pl)  
+		end  
+	end  
+end  
+  
+sizeBox.FocusLost:Connect(function()  
+	local n = tonumber(sizeBox.Text)  
+	if n then HitboxSize = n else sizeBox.Text = tostring(HitboxSize) end  
+end)  
+  
+transBox.FocusLost:Connect(function()  
+	local t = tonumber(transBox.Text)  
+	if t and t >= 0 and t <= 1 then HitboxTransparency = t else transBox.Text = tostring(HitboxTransparency) end  
+end)  
+  
+addBtn.MouseButton1Click:Connect(function()  
+	local n = tonumber(sizeBox.Text) or 0  
+	HitboxSize = HitboxSize + n  
+	sizeBox.Text = tostring(HitboxSize)  
+end)  
+  
+subBtn.MouseButton1Click:Connect(function()  
+	local n = tonumber(sizeBox.Text) or 0  
+	HitboxSize = math.max(1, HitboxSize - n)  
+	sizeBox.Text = tostring(HitboxSize)  
+end)  
+  
+toggleBtn.MouseButton1Click:Connect(function()  
+	Disabled = not Disabled  
+	toggleBtn.Text = Disabled and "Enable Hitbox" or "Disable Hitbox"  
+end)  
+  
+closeBtn.MouseButton1Click:Connect(function()  
+	frame.Visible = false  
+	miniBtn.Visible = true  
+end)  
+  
+miniBtn.MouseButton1Click:Connect(function()  
+	frame.Visible = true  
+	miniBtn.Visible = false  
+end)  
+  
+RunService.RenderStepped:Connect(function()  
+	if not Disabled then  
+		for _, pl in ipairs(PlayersList) do  
+			if pl.Character and pl.Character:FindFirstChild("HumanoidRootPart") then  
+				local part = pl.Character.HumanoidRootPart  
+				part.Size = Vector3.new(HitboxSize, HitboxSize, HitboxSize)  
+				part.Transparency = HitboxTransparency  
+				part.BrickColor = BrickColor.new("White")  
+				part.Material = Enum.Material.Plastic -- <-- fix: tidak glowing  
+				part.CanCollide = false  
+			end  
+		end  
+	end  
+end)  
+  
+while true do  
+	refreshTargets()  
+	wait(1)  
+end
